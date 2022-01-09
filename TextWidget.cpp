@@ -51,13 +51,18 @@ void TextWidget::toggleFindWidget(bool visible){
 
 void TextWidget::keyPressEvent(QKeyEvent* event){
 
-    bool ctrlModKeyPressed = event->modifiers() & Qt::ControlModifier;
+    bool ctrlModKeyPressed  = event->modifiers() & Qt::ControlModifier;
+    bool shiftModKeyPressed = event->modifiers() & Qt::ShiftModifier;
     switch(event->key()){
         case Qt::Key_F:
             toggleFindWidget(ctrlModKeyPressed);
             break;
         case Qt::Key_Escape:
             toggleFindWidget(false);
+            break;
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            shiftModKeyPressed ? goToPrevHighlight() : goToNextHighlight();
             break;
         default:
             break;
@@ -79,13 +84,12 @@ void TextWidget::highlightText()
     // For some reason rehighlighting from the context of the QTextEdit itself
     // will cause a recursive infinite loop...
     if(sender() != &m_textEdit){
-        m_textHighlighter.rehighlight();
+        m_textHighlighter.customRehighlight();
     }
 
 }
 
 void TextWidget::TextEditRefreshHighlighter(int cursorIndex){
-    m_textEdit.setFocus();
     if(cursorIndex >= 0){
         QTextCursor currentCursor = m_textEdit.textCursor();
         currentCursor.setPosition(cursorIndex);
@@ -95,12 +99,12 @@ void TextWidget::TextEditRefreshHighlighter(int cursorIndex){
 
 void TextWidget::goToNextHighlight()
 {
-    int cursorIndex = m_textHighlighter.setNextBlockStateCurrent();
+    int cursorIndex = m_textHighlighter.setNextMatchStateActive();
     TextEditRefreshHighlighter(cursorIndex);
 }
 
 void TextWidget::goToPrevHighlight()
 {
-    int cursorIndex = m_textHighlighter.setPrevBlockStateCurrent();
+    int cursorIndex = m_textHighlighter.setPrevMatchStateActive();
     TextEditRefreshHighlighter(cursorIndex);
 }
