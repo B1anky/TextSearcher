@@ -31,10 +31,10 @@ void TextWidget::createWidgets(){
 
 void TextWidget::createConnections(){
 
-    connect(&m_findTextLineEdit, &QLineEdit::textChanged, this, TextWidget::highlightText,     Qt::DirectConnection );
-    connect(&m_textEdit,         &QTextEdit::textChanged, this, TextWidget::highlightText,     Qt::DirectConnection );
-    connect(&m_nextButton,       &QPushButton::clicked,   this, TextWidget::goToNextHighlight, Qt::DirectConnection );
-    connect(&m_previousButton,   &QPushButton::clicked,   this, TextWidget::goToPrevHighlight, Qt::DirectConnection );
+    connect(&m_findTextLineEdit, &QLineEdit::textChanged, this, TextWidget::highlightText,     Qt::DirectConnection);
+    connect(&m_textEdit,         &QTextEdit::textChanged, this, TextWidget::highlightText,     Qt::DirectConnection);
+    connect(&m_nextButton,       &QPushButton::clicked,   this, TextWidget::goToNextHighlight, Qt::DirectConnection);
+    connect(&m_previousButton,   &QPushButton::clicked,   this, TextWidget::goToPrevHighlight, Qt::DirectConnection);
 
 }
 
@@ -81,9 +81,14 @@ void TextWidget::highlightText()
         m_textHighlighter.setWordPattern("");
     }
 
-    // For some reason rehighlighting from the context of the QTextEdit itself
+    // For some reason rehighlighting from the
+    // context of the QTextEdit itself
     // will cause a recursive infinite loop...
-    if(sender() != &m_textEdit){
+    if(sender() == &m_textEdit){
+        m_textEdit.blockSignals(true);
+        m_textHighlighter.customRehighlight();
+        m_textEdit.blockSignals(false);
+    }else{
         m_textHighlighter.customRehighlight();
     }
 
@@ -94,6 +99,7 @@ void TextWidget::TextEditRefreshHighlighter(int cursorIndex){
         QTextCursor currentCursor = m_textEdit.textCursor();
         currentCursor.setPosition(cursorIndex);
         m_textEdit.setTextCursor(currentCursor);
+        m_textEdit.ensureCursorVisible();
     }
 }
 

@@ -1,5 +1,6 @@
 #include "highlighter.h"
 #include <QTextDocument>
+#include <QDebug>
 
 Highlighter::Highlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
@@ -19,7 +20,7 @@ void Highlighter::setWordPattern(const QString& pattern){
     }
 }
 
-void Highlighter::highlightBlock(const QString &text)
+void Highlighter::highlightBlock(const QString& text)
 {
     if(m_findString.isEmpty()){
         setFormat(0, document()->toPlainText().length(), QTextCharFormat());
@@ -34,9 +35,10 @@ void Highlighter::highlightBlock(const QString &text)
                 QTextCharFormat format = m_defaultHighlightingRule.format;
                 if( m_activeMatchIndex == m_currentMatchIndex ){
                     format = m_activeHighlightingRule.format;
+                    m_activeBlock = currentBlock();
                 }
                 setFormat(startOffset, endOffset - startOffset, format);
-                m_matchMap[m_currentMatchIndex] = match;
+                m_matchList.push_back(match);
                 ++m_currentMatchIndex;
             }
         }
@@ -44,17 +46,17 @@ void Highlighter::highlightBlock(const QString &text)
 }
 
 void Highlighter::customRehighlight(){
-    m_matchMap.clear();
+    m_matchList.clear();
     m_currentMatchIndex = 0;
     rehighlight();
 }
 
 int Highlighter::setNextMatchStateActive(){
     int startIndex = -1;
-    if(m_activeMatchIndex + 1 < m_matchMap.size()){
+    if(m_activeMatchIndex + 1 < m_matchList.size()){
         ++m_activeMatchIndex;
-        startIndex = m_matchMap[m_activeMatchIndex].capturedEnd();
         customRehighlight();
+        startIndex = m_matchList[m_activeMatchIndex].capturedEnd() + m_activeBlock.position();
     }
     return startIndex;
 }
@@ -63,8 +65,8 @@ int Highlighter::setPrevMatchStateActive(){
     int startIndex = -1;
     if(m_activeMatchIndex - 1 >= 0){
         --m_activeMatchIndex;
-        startIndex = m_matchMap[m_activeMatchIndex].capturedEnd();
         customRehighlight();
+        startIndex = m_matchList[m_activeMatchIndex].capturedEnd() + m_activeBlock.position();
     }
     return startIndex;
 }

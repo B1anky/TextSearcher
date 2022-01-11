@@ -28,8 +28,9 @@ struct HighlightingRule{
     HighlightingRule m_defaultHighlightingRule;
     HighlightingRule m_activeHighlightingRule;
     QRegularExpressionMatchIterator m_matches;
-    QMap<int, QRegularExpressionMatch> m_matchMap;
+    QList<QRegularExpressionMatch>  m_matchList;
     int m_currentMatchIndex;
     int m_activeMatchIndex;
+    QTextBlock m_activeBlock;
 };
 #endif // HIGHLIGHTER_H
